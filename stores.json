@@ -1,22 +1,22 @@
 [
   {
     "store": "Home Depot Bayamon",
-    "store_id": "6815"
+    "zip": "00961"
   },
   {
     "store": "Home Depot Caguas",
-    "store_id": "6817"
+    "zip": "00725"
   },
   {
     "store": "Home Depot Carolina",
-    "store_id": "6814"
+    "zip": "00983"
   },
   {
     "store": "Home Depot Hatillo",
-    "store_id": "6816"
+    "zip": "00659"
   },
   {
     "store": "Home Depot Ponce",
-    "store_id": "6818"
+    "zip": "00731"
   }
 ]
