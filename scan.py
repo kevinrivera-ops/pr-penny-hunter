@@ -20,7 +20,7 @@ def send_alert(message):
     )
 
 
-def get_home_depot_price(product_id):
+def get_home_depot_page(product_id):
 
     url = f"https://www.homedepot.com/p/{product_id}"
 
@@ -28,12 +28,12 @@ def get_home_depot_price(product_id):
         "User-Agent": "Mozilla/5.0"
     }
 
-    r = requests.get(
+    response = requests.get(
         url,
         headers=headers
     )
 
-    return r.text
+    return response.text
 
 
 
@@ -44,27 +44,11 @@ with open("watchlist.json") as f:
 
 for product in products:
 
-    page = get_home_depot_price(
+    page = get_home_depot_page(
         product["product_id"]
     )
 
+    print("PAGE LENGTH:", len(page))
+
     print(page[:1000])
-    )
-
-
-    if "0.01" in page or "0.03" in page:
-
-        send_alert(
-f"""
-🚨 PENNY DEAL FOUND
-
-{product['name']}
-
-Store:
-{product['store']}
-
-Product:
-{product['product_id']}
-"""
-        )    
     
