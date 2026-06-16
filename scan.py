@@ -41,7 +41,7 @@ def check_product(product):
 
     text = soup.get_text()
 
-    if "$0.01" in text or "$0.03" in text:
+    if True:
 
         send_alert(
             f"""
