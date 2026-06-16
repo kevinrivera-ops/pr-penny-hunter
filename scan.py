@@ -1,6 +1,7 @@
 import requests
 import json
 import os
+import re
 from bs4 import BeautifulSoup
 
 
@@ -21,56 +22,162 @@ def send_alert(message):
     )
 
 
-def check_product(product):
+def get_price(product_url):
 
     headers = {
-        "User-Agent": "Mozilla/5.0"
+        "User-Agent": (
+            "Mozilla/5.0 "
+            "(Windows NT 10.0; Win64; x64)"
+        )
     }
 
     response = requests.get(
-        product["url"],
+        product_url,
         headers=headers
     )
 
-    page = response.text
-
     soup = BeautifulSoup(
-        page,
+        response.text,
         "html.parser"
     )
 
-    text = soup.get_text()
+    text = soup.get_text(" ")
 
-    if "$0.01" in text or "$0.03" in text:
+    # Find dollar amounts
+    prices = re.findall(
+        r"\$[\d,]+\.\d{2}",
+        text
+    )
 
-        send_alert(
-            f"""
-🚨 PENNY DEAL FOUND
+    clean_prices = []
 
-Item:
-{product['name']}
+    for p in prices:
+        try:
+            value = float(
+                p.replace("$", "")
+                 .replace(",", "")
+            )
+            clean_prices.append(value)
 
-Store:
-{product['store']}
-
-Link:
-{product['url']}
-"""
-        )
+        except:
+            pass
 
 
-with open("watchlist.json") as file:
-    products = json.load(file)
+    if clean_prices:
+        return min(clean_prices)
+
+    return None
+
+
+
+with open("watchlist.json") as f:
+    products = json.load(f)
+
+
+
+with open("prices.json") as f:
+    old_prices = json.load(f)
+
 
 
 for product in products:
 
     try:
-        check_product(product)
 
-    except Exception as error:
+        current_price = get_price(
+            product["url"]
+        )
+
+
+        if current_price is None:
+            print(
+                "No price found:",
+                product["name"]
+            )
+            continue
+
+
+
+        name = product["name"]
+
+
+        previous = old_prices.get(
+            name
+        )
+
 
         print(
-            product["name"],
-            error
+            name,
+            current_price
         )
+
+
+        alert = False
+
+
+        if current_price <= 5:
+            alert = True
+
+
+        if previous:
+
+            drop = (
+                (previous - current_price)
+                / previous
+            ) * 100
+
+
+            if drop >= 50:
+                alert = True
+
+
+
+        if alert:
+
+            send_alert(
+f"""
+🚨 DEAL ALERT
+
+{name}
+
+Store:
+{product['store']}
+
+Old price:
+${previous if previous else "N/A"}
+
+New price:
+${current_price}
+
+Link:
+{product['url']}
+"""
+            )
+
+
+
+        old_prices[name] = current_price
+
+
+
+    except Exception as e:
+
+        print(
+            "ERROR:",
+            product["name"],
+            e
+        )
+
+
+
+with open(
+    "prices.json",
+    "w"
+) as f:
+
+    json.dump(
+        old_prices,
+        f,
+        indent=2
+    )
+    
