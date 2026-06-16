@@ -48,9 +48,7 @@ for product in products:
         product["product_id"]
     )
 
-    print(
-        product["name"],
-        len(page)
+    print(page[:1000])
     )
 
 
