@@ -63,11 +63,7 @@ for product in products:
         product["product_id"]
     )
 
-    print(
-        product["name"],
-        "HTML LENGTH:",
-        len(html)
-    )
+    print(html[:2000])
 
     if "$0.01" in html or "$0.03" in html:
 
