@@ -1,6 +1,6 @@
-import requests
 import json
 import os
+from playwright.sync_api import sync_playwright
 
 
 TELEGRAM_TOKEN = os.environ["TELEGRAM_TOKEN"]
@@ -8,6 +8,8 @@ TELEGRAM_CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
 
 
 def send_alert(message):
+
+    import requests
 
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
 
@@ -20,20 +22,34 @@ def send_alert(message):
     )
 
 
-def get_home_depot_page(product_id):
+def get_page(product_id):
 
     url = f"https://www.homedepot.com/p/{product_id}"
 
-    headers = {
-        "User-Agent": "Mozilla/5.0"
-    }
+    with sync_playwright() as p:
 
-    response = requests.get(
-        url,
-        headers=headers
-    )
+        browser = p.chromium.launch(
+            headless=True
+        )
 
-    return response.text
+        page = browser.new_page(
+            user_agent=(
+                "Mozilla/5.0 "
+                "(Windows NT 10.0; Win64; x64)"
+            )
+        )
+
+        page.goto(
+            url,
+            wait_until="networkidle",
+            timeout=60000
+        )
+
+        content = page.content()
+
+        browser.close()
+
+        return content
 
 
 
@@ -41,14 +57,31 @@ with open("watchlist.json") as f:
     products = json.load(f)
 
 
-
 for product in products:
 
-    page = get_home_depot_page(
+    html = get_page(
         product["product_id"]
     )
 
-    print("PAGE LENGTH:", len(page))
+    print(
+        product["name"],
+        "HTML LENGTH:",
+        len(html)
+    )
 
-    print(page[:1000])
+    if "$0.01" in html or "$0.03" in html:
+
+        send_alert(
+f"""
+🚨 PENNY DEAL FOUND
+
+{product['name']}
+
+Store:
+{product['store']}
+
+Product ID:
+{product['product_id']}
+"""
+        )
     
