@@ -66,6 +66,9 @@ def get_price(product_url):
     if clean_prices:
         return min(clean_prices)
 
+    print("NO PRICE FOUND")
+    print(text[:1000])
+
     return None
 
 
