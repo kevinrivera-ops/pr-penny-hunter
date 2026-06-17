@@ -8,31 +8,24 @@ with open("watchlist.json") as f:
 
 for product in products:
 
-    product_id = product["product_id"]
+    keyword = product["name"]
 
-    url = f"https://www.homedepot.com/p/{product_id}"
-
-    headers = {
-        "User-Agent": "Mozilla/5.0",
-        "Accept": "text/html"
-    }
+    url = "https://www.homedepot.com/s/" + keyword.replace(" ", "%20")
 
     r = requests.get(
         url,
-        headers=headers,
-        timeout=20
+        headers={
+            "User-Agent": "Mozilla/5.0"
+        }
     )
 
-    print("\nPRODUCT:")
-    print(product["name"])
+    print("SEARCH:")
+    print(keyword)
 
     print("STATUS:")
     print(r.status_code)
 
-    print("SERVER:")
-    print(r.headers.get("server"))
-
     print("LENGTH:")
     print(len(r.text))
 
-    
+    print(r.text[:300])
