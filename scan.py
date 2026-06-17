@@ -1,23 +1,5 @@
-import json
-import os
 import requests
-
-
-TELEGRAM_TOKEN = os.environ["TELEGRAM_TOKEN"]
-TELEGRAM_CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
-
-
-def send_alert(message):
-
-    url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
-
-    requests.post(
-        url,
-        data={
-            "chat_id": TELEGRAM_CHAT_ID,
-            "text": message
-        }
-    )
+import json
 
 
 with open("watchlist.json") as f:
@@ -26,28 +8,31 @@ with open("watchlist.json") as f:
 
 for product in products:
 
-    print(
-        "Watching:",
-        product["name"]
+    product_id = product["product_id"]
+
+    url = f"https://www.homedepot.com/p/{product_id}"
+
+    headers = {
+        "User-Agent": "Mozilla/5.0",
+        "Accept": "text/html"
+    }
+
+    r = requests.get(
+        url,
+        headers=headers,
+        timeout=20
     )
 
+    print("\nPRODUCT:")
+    print(product["name"])
 
-        response = requests.get(
-            url,
-            headers={
-                "User-Agent": "Mozilla/5.0",
-                "Accept": "application/json"
-            }
-        )
+    print("STATUS:")
+    print(r.status_code)
 
+    print("SERVER:")
+    print(r.headers.get("server"))
 
-        print(
-            "STATUS:",
-            response.status_code
-        )
+    print("LENGTH:")
+    print(len(r.text))
 
-
-        print(
-            response.text[:300]
-        )
     
